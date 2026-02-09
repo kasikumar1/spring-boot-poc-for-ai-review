@@ -16,4 +16,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByPriceBetween(Double minPrice, Double maxPrice);
     
     Optional<Product> findByNameIgnoreCase(String name);
+    
+    // Filter methods for quantity and name
+    List<Product> findByQuantityGreaterThanEqual(Integer minQuantity);
+    
+    List<Product> findByQuantityGreaterThanEqualAndNameContainingIgnoreCase(Integer minQuantity, String nameKeyword);
 }

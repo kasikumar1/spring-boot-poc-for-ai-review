@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
 
 @Service
 @Transactional
@@ -21,23 +20,26 @@ public class ProductServiceImpl implements ProductService {
     // -----------------------------
     // Filter products by quantity & name keyword
     // -----------------------------
+    @Override
     @Transactional(readOnly = true)
     public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
-        // Fetch all products from repository
-        List<Product> allProducts = productRepository.findAll();
+        // Delegate filtering to the repository so that it is executed in the database
+        boolean hasMinQuantity = minQuantity != null;
+        boolean hasNameKeyword = nameKeyword != null && !nameKeyword.trim().isEmpty();
 
-        // Classic loop implementation (without Stream API)
-        List<Product> filtered = new ArrayList<>();
-        for (Product p : allProducts) {
-            boolean matchesQuantity = (minQuantity == null || p.getQuantity() >= minQuantity);
-            boolean matchesName = (nameKeyword == null || p.getName().toLowerCase().contains(nameKeyword.toLowerCase()));
-
-            if (matchesQuantity && matchesName) {
-                filtered.add(p);
-            }
+        if (!hasMinQuantity && !hasNameKeyword) {
+            // No filters provided, return all products
+            return productRepository.findAll();
+        } else if (hasMinQuantity && !hasNameKeyword) {
+            // Only quantity filter provided
+            return productRepository.findByQuantityGreaterThanEqual(minQuantity);
+        } else if (!hasMinQuantity && hasNameKeyword) {
+            // Only name keyword filter provided
+            return productRepository.findByNameContainingIgnoreCase(nameKeyword);
+        } else {
+            // Both filters provided
+            return productRepository.findByQuantityGreaterThanEqualAndNameContainingIgnoreCase(minQuantity, nameKeyword);
         }
-
-        return filtered;
     }
 
     // -----------------------------
