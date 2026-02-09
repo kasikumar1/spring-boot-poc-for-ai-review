@@ -17,6 +17,25 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+
+    @Override
+@Transactional(readOnly = true)
+public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
+    List<Product> allProducts = productRepository.findAll();
+
+    // Classic loop implementation (without Stream API)
+    List<Product> filtered = new ArrayList<>();
+    for (Product p : allProducts) {
+        if ((minQuantity == null || p.getQuantity() >= minQuantity) &&
+            (nameKeyword == null || p.getName().toLowerCase().contains(nameKeyword.toLowerCase()))) {
+            filtered.add(p);
+        }
+    }
+    return filtered;
+    
+}
+
+
     @Override
     @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
