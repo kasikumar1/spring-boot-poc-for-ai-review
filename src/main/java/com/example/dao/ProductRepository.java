@@ -1,43 +1,17 @@
-package com.example.dao;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-public class ProductRepository {
-    private Map<Integer, Product> productDatabase = new HashMap<>();
-    private int currentId = 1;
-
-    public List<Product> findAll() {
-        return new ArrayList<>(productDatabase.values());
-    }
-
-    public Optional<Product> findById(int id) {
-        return Optional.ofNullable(productDatabase.get(id));
-    }
-
-    public Product save(Product product) {
-        if (product.getId() == 0) {
-            product.setId(currentId++);
-        }
-        productDatabase.put(product.getId(), product);
-        return product;
-    }
-
-    public void deleteById(int id) {
-        productDatabase.remove(id);
-    }
-
-    // Mock data for testing
-    public void loadMockData() {
-        save(new Product(0, "Product 1", 10.99));
-        save(new Product(0, "Product 2", 15.49));
-        save(new Product(0, "Product 3", 7.99));
-    }
+// Interface for Product Repository
+interface IProductRepository {
+    void addProduct(Product product);
+    Optional<Product> getProductById(int id);
+    List<Product> getAllProducts();
+    void updateProduct(int id, Product product);
+    void deleteProduct(int id);
 }
 
+// Product class
 class Product {
     private int id;
     private String name;
@@ -45,23 +19,58 @@ class Product {
 
     public Product(int id, String name, double price) {
         this.id = id;
+        validateName(name);
+        validatePrice(price);
         this.name = name;
         this.price = price;
     }
 
-    public int getId() {
-        return id;
+    // Getters
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+
+    // Validation methods
+    private void validateName(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Product name cannot be null or empty");
+        }
     }
 
-    public void setId(int id) {
-        this.id = id;
+    private void validatePrice(double price) {
+        if (price < 0) {
+            throw new IllegalArgumentException("Product price cannot be negative");
+        }
+    }
+}
+
+// Implementation of Product Repository
+class ProductRepository implements IProductRepository {
+    private List<Product> products = new ArrayList<>();
+
+    @Override
+    public void addProduct(Product product) {
+        products.add(product);
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public Optional<Product> getProductById(int id) {
+        return products.stream().filter(p -> p.getId() == id).findFirst();
     }
 
-    public double getPrice() {
-        return price;
+    @Override
+    public List<Product> getAllProducts() {
+        return new ArrayList<>(products);
+    }
+
+    @Override
+    public void updateProduct(int id, Product product) {
+        deleteProduct(id);
+        addProduct(product);
+    }
+
+    @Override
+    public void deleteProduct(int id) {
+        products.removeIf(p -> p.getId() == id);
     }
 }
