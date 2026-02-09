@@ -18,37 +18,49 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    // -----------------------------
+    // Filter products by quantity & name keyword
+    // -----------------------------
+    @Transactional(readOnly = true)
+    public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
+        // Fetch all products from repository
+        List<Product> allProducts = productRepository.findAll();
 
-    @Override
-@Transactional(readOnly = true)
-public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
-    List<Product> allProducts = productRepository.findAll();
+        // Classic loop implementation (without Stream API)
+        List<Product> filtered = new ArrayList<>();
+        for (Product p : allProducts) {
+            boolean matchesQuantity = (minQuantity == null || p.getQuantity() >= minQuantity);
+            boolean matchesName = (nameKeyword == null || p.getName().toLowerCase().contains(nameKeyword.toLowerCase()));
 
-    // Classic loop implementation (without Stream API)
-    List<Product> filtered = new ArrayList<>();
-    for (Product p : allProducts) {
-        if ((minQuantity == null || p.getQuantity() >= minQuantity) &&
-            (nameKeyword == null || p.getName().toLowerCase().contains(nameKeyword.toLowerCase()))) {
-            filtered.add(p);
+            if (matchesQuantity && matchesName) {
+                filtered.add(p);
+            }
         }
+
+        return filtered;
     }
-    return filtered;
-    
-}
 
-
+    // -----------------------------
+    // Get all products
+    // -----------------------------
     @Override
     @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
+    // -----------------------------
+    // Get product by ID
+    // -----------------------------
     @Override
     @Transactional(readOnly = true)
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
+    // -----------------------------
+    // Create a new product
+    // -----------------------------
     @Override
     public Product createProduct(Product product) {
         if (product.getName() == null || product.getName().isEmpty()) {
@@ -60,13 +72,16 @@ public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
         return productRepository.save(product);
     }
 
+    // -----------------------------
+    // Update an existing product
+    // -----------------------------
     @Override
     public Product updateProduct(Long id, Product product) {
         Optional<Product> existingProduct = productRepository.findById(id);
-        
+
         if (existingProduct.isPresent()) {
             Product productToUpdate = existingProduct.get();
-            
+
             if (product.getName() != null) {
                 productToUpdate.setName(product.getName());
             }
@@ -79,13 +94,16 @@ public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
             if (product.getQuantity() != null) {
                 productToUpdate.setQuantity(product.getQuantity());
             }
-            
+
             return productRepository.save(productToUpdate);
         } else {
             throw new RuntimeException("Product not found with id: " + id);
         }
     }
 
+    // -----------------------------
+    // Delete a product
+    // -----------------------------
     @Override
     public boolean deleteProduct(Long id) {
         if (productRepository.existsById(id)) {
@@ -95,12 +113,18 @@ public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
         return false;
     }
 
+    // -----------------------------
+    // Search products by name (case-insensitive)
+    // -----------------------------
     @Override
     @Transactional(readOnly = true)
     public List<Product> searchProductsByName(String name) {
         return productRepository.findByNameContainingIgnoreCase(name);
     }
 
+    // -----------------------------
+    // Get products by price range
+    // -----------------------------
     @Override
     @Transactional(readOnly = true)
     public List<Product> getProductsByPriceRange(Double minPrice, Double maxPrice) {
