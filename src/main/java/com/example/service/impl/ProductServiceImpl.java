@@ -53,8 +53,8 @@ public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
         if (product.getName() == null || product.getName().isEmpty()) {
             throw new IllegalArgumentException("Product name cannot be empty");
         }
-        if (product.getPrice() == null || product.getPrice() < =0) {
-            throw new IllegalArgumentException("Product price must be valid");
+        if (product.getPrice() == null || product.getPrice() <= 0) {
+            throw new IllegalArgumentException("Product price must be greater than 0");
         }
         return productRepository.save(product);
     }
