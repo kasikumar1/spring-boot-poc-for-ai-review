@@ -21,6 +21,7 @@ public class ProductServiceImpl implements ProductService {
     // -----------------------------
     // Filter products by quantity & name keyword
     // -----------------------------
+    @Override
     @Transactional(readOnly = true)
     public List<Product> filterProducts(Integer minQuantity, String nameKeyword) {
         // Fetch all products from repository
@@ -89,6 +90,9 @@ public class ProductServiceImpl implements ProductService {
                 productToUpdate.setDescription(product.getDescription());
             }
             if (product.getPrice() != null) {
+                if (product.getPrice() <= 0) {
+                    throw new IllegalArgumentException("Product price must be greater than 0");
+                }
                 productToUpdate.setPrice(product.getPrice());
             }
             if (product.getQuantity() != null) {

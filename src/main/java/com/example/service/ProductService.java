@@ -19,4 +19,6 @@ public interface ProductService {
     List<Product> searchProductsByName(String name);
     
     List<Product> getProductsByPriceRange(Double minPrice, Double maxPrice);
+    
+    List<Product> filterProducts(Integer minQuantity, String nameKeyword);
 }
